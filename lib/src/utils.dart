@@ -1,8 +1,6 @@
 import 'dart:developer' as dev;
-import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/file.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:meta/meta.dart';
@@ -95,17 +93,19 @@ class DynamicCachedFontsCacheManager {
   static String? _customCacheKey;
 
   /// The getter for the default instance of [CacheManager] in [_cacheManagers].
-  static CacheManager get defaultCacheManager => _cacheManagers[_defaultCacheKey]!;
+  static CacheManager get defaultCacheManager =>
+      _cacheManagers[_defaultCacheKey]!;
 
   /// The getter for the custom instance of [CacheManager] in [_cacheManagers].
-  static CacheManager? getCustomCacheManager() => _cacheManagers[_customCacheKey];
+  static CacheManager? getCustomCacheManager() =>
+      _cacheManagers[_customCacheKey];
 
   /// The setter for the custom instance of [CacheManager] in [_cacheManagers].
   /// [Config.cacheKey] will be used as the key when adding the instance to
   /// [_cacheManagers].
   static setCustomCacheManager(CacheManager cacheManager) {
-    _customCacheKey =
-        cacheManager.store.storeKey; // This is the same key provided to Config.cacheKey.
+    _customCacheKey = cacheManager
+        .store.storeKey; // This is the same key provided to Config.cacheKey.
     _cacheManagers[_customCacheKey!] = cacheManager;
   }
 
@@ -119,10 +119,13 @@ class DynamicCachedFontsCacheManager {
 
   /// Returns a custom [CacheManager], if present, or
   static CacheManager getCacheManager(String cacheKey) =>
-      getCustomCacheManager() ?? _cacheManagers[cacheKey] ?? defaultCacheManager;
+      getCustomCacheManager() ??
+      _cacheManagers[cacheKey] ??
+      defaultCacheManager;
 
   /// Creates a new instance of [CacheManager] if the default can't be used.
-  static void handleCacheManager(String cacheKey, Duration cacheStalePeriod, int maxCacheObjects) {
+  static void handleCacheManager(
+      String cacheKey, Duration cacheStalePeriod, int maxCacheObjects) {
     if (cacheStalePeriod != kDefaultCacheStalePeriod ||
         maxCacheObjects != kDefaultMaxCacheObjects) {
       _cacheManagers[cacheKey] ??= CacheManager(
@@ -155,7 +158,8 @@ class _FontFileExtensionManager {
 
   final Map<String, List<int>> _validExtensions = {};
 
-  void addExtension({required String extension, required List<int> magicNumber}) {
+  void addExtension(
+      {required String extension, required List<int> magicNumber}) {
     _validExtensions[extension] = magicNumber;
   }
 
@@ -180,50 +184,36 @@ class _FontFileExtensionManager {
 class Utils {
   Utils._();
 
-  static final _FontFileExtensionManager _fontFileExtensionManager = _FontFileExtensionManager()
-    ..addExtension(
-      extension: 'ttf',
-      magicNumber: <int>[
-        0x00,
-        0x01,
-        0x00,
-        0x00,
-        0x00,
-      ],
-    )
-    ..addExtension(
-      extension: 'otf',
-      magicNumber: <int>[
-        0x4F,
-        0x54,
-        0x54,
-        0x4F,
-        0x00,
-      ],
-    );
+  static final _FontFileExtensionManager _fontFileExtensionManager =
+      _FontFileExtensionManager()
+        ..addExtension(
+          extension: 'ttf',
+          magicNumber: <int>[
+            0x00,
+            0x01,
+            0x00,
+            0x00,
+            0x00,
+          ],
+        )
+        ..addExtension(
+          extension: 'otf',
+          magicNumber: <int>[
+            0x4F,
+            0x54,
+            0x54,
+            0x4F,
+            0x00,
+          ],
+        );
 
   /// A property used to specify whether detailed logs should be printed for debugging.
   static bool shouldVerboseLog = false;
 
-  /// Checks whether the received [url] is a Cloud Storage url or an https url.
-  /// If the url points to a Cloud Storage bucket, then a download url
-  /// is generated using the Firebase SDK.
-  static Future<String> handleUrl(String url) async {
-    final Reference ref = FirebaseStorage.instance.refFromURL(url);
-
-    devLog(<String>[
-      'Created Firebase Storage reference with following values -\n',
-      'Bucket name - ${ref.bucket}',
-      'Object name - ${ref.name}',
-      'Object path - ${ref.fullPath}',
-    ]);
-
-    return ref.getDownloadURL();
-  }
-
   /// Checks whether the [font] has a valid extension which is supported by Flutter.
   static void verifyFileExtension(File font) {
-    if (!_fontFileExtensionManager.matchesFileExtension(font.basename, font.readAsBytesSync())) {
+    if (!_fontFileExtensionManager.matchesFileExtension(
+        font.basename, font.readAsBytesSync())) {
       throw UnsupportedError(
         'Bad File Format\n'
         'The provided file extension is not supported. '
@@ -234,12 +224,14 @@ class Utils {
 
   /// Remove reserved characters from url which can cause errors when used as
   /// storage paths in some operating systems.
-  static String sanitizeUrl(String url) => url.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
+  static String sanitizeUrl(String url) =>
+      url.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
 
   /// Returns the file name of the font or the url if the url cannot be parsed.
   static String getFileNameOrUrl(String url) {
     final int index = url.lastIndexOf('/');
-    final int? endIndex = url.contains(RegExp(r'\?|#')) ? url.indexOf(RegExp(r'\?|#')) : null;
+    final int? endIndex =
+        url.contains(RegExp(r'\?|#')) ? url.indexOf(RegExp(r'\?|#')) : null;
     if (index < 0 || index + 1 >= url.length) return url;
     return url.substring(index + 1, endIndex);
   }
